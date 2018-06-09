@@ -1,0 +1,9 @@
+*.pyc
+.eggs
+.vscode
+*.log
+*.txt
+*.egg-info
+sdist
+venv
+.tox
