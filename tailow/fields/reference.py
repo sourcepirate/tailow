@@ -8,6 +8,7 @@ class ReferenceField(BaseField):
 
     def __init__(self, kls, *args, **kwargs):
         self.kls = kls
+        self._is_reference = True
         super(ReferenceField, self).__init__(*args, **kwargs)
     
     def validate(self, value):
@@ -23,7 +24,7 @@ class ReferenceField(BaseField):
             return None
         if isinstance(value, ObjectId):
             return value
-        return value._id
+        return value._id if hasattr(value, '_id') else value.id
 
     def from_son(self, value):
         return value

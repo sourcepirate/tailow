@@ -1,5 +1,6 @@
 # simple document
 
+from bson.objectid import ObjectId
 from tailow.connection import Connection
 from tailow.fields.base import BaseField
 from tailow.queryset import QuerySet
@@ -26,7 +27,11 @@ def ensure_index(f):
             setattr(self.__class__, '_ensured_index', True)
         return await f(self, *args, **kwargs)
     return inner
+
+class classproperty(property):
     
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
 
 class DocumentMetaOptions(object):
     
@@ -45,12 +50,11 @@ class DocumentMeta(type):
     def __new__(mcs, name, bases, attrs):
         attrs["_fields"] = get_fields(bases, attrs)
         ncs = super(DocumentMeta, mcs).__new__(mcs, name, bases, attrs)
-        qryset = QuerySet(ncs)
         meta_data = DocumentMetaOptions(ncs, getattr(ncs, 'Meta', {}))
         setattr(ncs, '_ensured_index', False)
         setattr(ncs, '_meta', meta_data)
         setattr(ncs, '_collection', meta_data.name)
-        setattr(ncs, 'objects', qryset)
+        setattr(ncs, 'objects', classproperty(lambda *arg, **kwargs : QuerySet(ncs)))
         return ncs
 
 class Document(with_metaclass(DocumentMeta)):
@@ -61,7 +65,11 @@ class Document(with_metaclass(DocumentMeta)):
         self._id = kwargs.pop("id", kwargs.pop("_id", None))
         for key, value in kwargs.items():
             if key in self._fields:
-                self._values[key] = value
+                if self._fields[key].is_reference and not isinstance(value, Document):
+                    _field_class = self._fields[key]
+                    self._values[key] = _field_class.kls(id=value)
+                else:
+                    self._values[key] = value
 
 
     def get_field_value(self, name):
@@ -79,7 +87,7 @@ class Document(with_metaclass(DocumentMeta)):
         if field_name in ['_fields', '_values', "_id"]:
             return object.__getattribute__(self, field_name)
         if field_name in self._fields:
-            return self._fields[field_name].to_son(self._values[field_name])
+            return self._fields[field_name].from_son(self._values[field_name])
         return object.__getattribute__(self, field_name)
     
     def __setattr__(self, field_name, value):
@@ -112,5 +120,17 @@ class Document(with_metaclass(DocumentMeta)):
     async def delete(self):
         conn = self.__class__.get_collection(self._collection)
         if self._id:
-            return await conn.delete_one({"_id": self._id})
+            _id = self._id
+            if not isinstance(_id, ObjectId):
+                _id = ObjectId(_id)
+            return await conn.delete_one({"_id": _id})
         return None
+
+    @ensure_index
+    async def get(self):
+        conn = self.__class__.get_collection(self._collection)
+        if self._id:
+            value = await conn.find_one({"_id": self._id})
+            for _field_value in value:
+                self._values[_field_value] = value[_field_value]
+        return self

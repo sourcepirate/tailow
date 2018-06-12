@@ -27,3 +27,7 @@ class BaseField(object):
     
     def validate(self, value):
         return True
+
+    @property
+    def is_reference(self):
+        return hasattr(self, '_is_reference')
