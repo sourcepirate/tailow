@@ -1,4 +1,5 @@
 ## Tailow
+[![Build Status](https://travis-ci.org/sourcepirate/tailow.svg?branch=master)](https://travis-ci.org/sourcepirate/tailow)
 
 A ORM wrapper around motor
 
