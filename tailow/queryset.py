@@ -44,7 +44,6 @@ class QuerySet(object):
             values = values.skip(self._skip)
         if self._orders:
             values = values.sort(self._orders)
-        print(values)
         values = await values.to_list(length=self._limit)
         return list(map(lambda x: self.klass(**x), values))
     

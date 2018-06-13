@@ -2,6 +2,7 @@ import asyncio
 from tailow.document import Document
 from tailow.fields import *
 from tailow.connection import Connection
+from tailow import pymongo
 
 loop = asyncio.get_event_loop()
 
@@ -9,6 +10,9 @@ conn = Connection.connect("mongodb://localhost:27017", "test", loop=loop)
 
 class SampleDocument(Document):
     a = IntegerField(required=True)
+
+    class Meta:
+        indexes = [("a", pymongo.ASCENDING)]
 
 s = SampleDocument()
 s.a = 4
@@ -35,24 +39,24 @@ loop.run_until_complete(saveit())
 class Doc2(Document):
     n = ReferenceField(SampleDocument)
 
-# async def helloit():
-#     sdt = SampleDocument()
-#     sdt.a = 15
-#     await sdt.save()
-#     print("Sample document saved")
-#     dc = Doc2()
-#     dc.n = sdt
-#     await dc.save()
-#     print("Doc2 saved!!")
+async def helloit():
+    sdt = SampleDocument()
+    sdt.a = 15
+    await sdt.save()
+    print("Sample document saved")
+    dc = Doc2()
+    dc.n = sdt
+    await dc.save()
+    print("Doc2 saved!!")
 
-# loop.run_until_complete(helloit())
+loop.run_until_complete(helloit())
 
 async def queryAllDoc2():
     results = await Doc2.objects.find()
     for result in results:
         sam = await result.n.get()
+        print("A")
         print(sam.a)
 
 loop.run_until_complete(queryAllDoc2())
-
 
