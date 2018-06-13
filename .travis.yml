@@ -1,6 +1,7 @@
 language: python
 
 install:
+  - pip install virtualenv
   - pip install tox
 
 script:
