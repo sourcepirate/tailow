@@ -19,7 +19,7 @@ setup(
     license=LICENSE,
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=[
-        "motor",
+        "motor==1.2.1",
         "pymongo>=3.6,<4"
     ],
     test_suite='tests'
