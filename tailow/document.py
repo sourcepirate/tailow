@@ -39,6 +39,7 @@ class DocumentMetaOptions(object):
         self._klass = ncs
         self._name = getattr(opts, 'name', self._klass.__name__)
         self._indexes = getattr(opts, 'indexes', [])
+        self._uniques = getattr(opts, 'unique', [])
 
     @property
     def name(self):
@@ -80,8 +81,13 @@ class Document(with_metaclass(DocumentMeta)):
     
     @classmethod
     async def create_index(cls):
+        collection = cls.get_collection(cls._collection)
         if cls._meta._indexes:
-            await cls.get_collection(cls._collection).create_index(cls._meta._indexes)
+            await collection.create_index(cls._meta._indexes)
+        if cls._meta._uniques:
+            uniques = cls._meta._uniques
+            for field in uniques:
+                await collection.create_index(field, unique=True)
 
     def __getattribute__(self, field_name):
         if field_name in ['_fields', '_values', "_id"]:
