@@ -47,6 +47,12 @@ class QuerySet(object):
         values = await values.to_list(length=self._limit)
         return list(map(lambda x: self.klass(**x), values))
     
+    async def get(self):
+        values = await self.coll().find_one(self._filters)
+        if values:
+            return self.klass(**values)
+        return None
+    
     async def count(self):
         values = await self.coll() \
                        .find(self._filters) \
