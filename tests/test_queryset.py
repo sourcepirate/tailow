@@ -27,4 +27,4 @@ class TestModelQuerySet(AioTestCase):
 
     def test_model_filters(self):
         qs = TestModel.objects.filter(a=15)
-        self.assertDictEqual(qs._filters, {"a": 15})
+        self.assertDictEqual(qs._get_safe_query().query(TestModel._fields), {"a": 15})

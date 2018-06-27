@@ -22,7 +22,6 @@ class AioTestCase(TestCase):
             if item not in self._function_cache:
                 self._function_cache[item] = self.coroutine_function_decorator(attr)
             return self._function_cache[item]
-        # print(attr, type(attr))
         return attr
 
 class AsyncMock(Mock):
