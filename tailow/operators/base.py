@@ -43,7 +43,8 @@ def transform_query(fields, **queryargs):
             query_values = opr.to_query(field_name, opr.get_value(field, value))
             query_set[field_name] = query_values
         else:
-            query_set[key] = value
+            field = fields.get(key)
+            query_set[key] = field.to_son(value)
     return query_set
 
 
