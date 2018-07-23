@@ -1,6 +1,6 @@
 ## Tailow
 [![Build Status](https://travis-ci.org/sourcepirate/tailow.svg?branch=master)](https://travis-ci.org/sourcepirate/tailow)
-
+[![Documentation Status](https://readthedocs.org/projects/tailow/badge/?version=latest)](https://tailow.readthedocs.io/en/latest/?badge=latest)
 A ORM wrapper around motor
 
 ## Usage
@@ -37,7 +37,12 @@ evloop.run_until_complete(get_all_students())
 
 ```
 
-## Status
+## Provides
 
-Work in progress.
+* Querying via Q objects.
+* Special Operators.
+* Index Support.
+
+## License
+MIT.
 
