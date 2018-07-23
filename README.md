@@ -1,6 +1,8 @@
 ## Tailow
 [![Build Status](https://travis-ci.org/sourcepirate/tailow.svg?branch=master)](https://travis-ci.org/sourcepirate/tailow)
 [![Documentation Status](https://readthedocs.org/projects/tailow/badge/?version=latest)](https://tailow.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/tailow.svg)](https://badge.fury.io/py/tailow)
+
 A ORM wrapper around motor
 
 ## Usage
