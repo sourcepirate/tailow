@@ -39,8 +39,7 @@ class DocumentMetaOptions(object):
         self._klass = ncs
         self._name = getattr(opts, 'name', self._klass.__name__)
         self._indexes = getattr(opts, 'indexes', [])
-        self._uniques = getattr(opts, 'unique', [])
-
+        self._uniques = []
     @property
     def name(self):
         return self._name
@@ -52,11 +51,23 @@ class DocumentMeta(type):
         attrs["_fields"] = get_fields(bases, attrs)
         ncs = super(DocumentMeta, mcs).__new__(mcs, name, bases, attrs)
         meta_data = DocumentMetaOptions(ncs, getattr(ncs, 'Meta', {}))
+        setattr(meta_data, '_uniques', DocumentMeta.get_unique_fields(attrs["_fields"]))
         setattr(ncs, '_ensured_index', False)
         setattr(ncs, '_meta', meta_data)
         setattr(ncs, '_collection', meta_data.name)
         setattr(ncs, 'objects', classproperty(lambda *arg, **kwargs : QuerySet(ncs)))
         return ncs
+    
+    @staticmethod
+    def get_unique_fields(fields):
+        unique_fields = []
+        for field in fields:
+            if fields[field].unique:
+                unique_fields.append(field)
+        return unique_fields
+
+class DocumentException(Exception):
+    pass
 
 class Document(with_metaclass(DocumentMeta)):
 
@@ -72,12 +83,17 @@ class Document(with_metaclass(DocumentMeta)):
                 else:
                     self._values[key] = value
 
-
     def get_field_value(self, name):
         """ get field value """
         field = self._fields[name]
         value = field.get_value(self._values.get(name, None))
         return value
+
+    def validate(self):
+        for field in self._fields:
+            if self._fields[field].required and self._values.get(field) is not None: 
+                continue
+            raise DocumentException("{} should not be None".format(field))
     
     @classmethod
     async def create_index(cls):
@@ -115,6 +131,7 @@ class Document(with_metaclass(DocumentMeta)):
 
     @ensure_index
     async def save(self):
+        self.validate()
         conn = self.__class__.get_collection(self._collection)
         if not self._id:
             inserted = await conn.insert_one(self.to_son())
