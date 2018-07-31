@@ -1,14 +1,10 @@
 
 class BaseField(object):
 
-    def __init__(self, required=True, 
-                       unique=True, 
-                       sparse=True,
-                       default=None):
+    def __init__(self, required=True, default=None, unique=False):
         self.required = required
-        self.unique = unique
-        self.sparse = sparse
         self.default = default
+        self.unique = unique
     
     def is_empty(self, value):
         return value is None

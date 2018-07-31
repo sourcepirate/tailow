@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from .base import AioTestCase, AsyncMock
 from tailow.connection import Connection
 from tailow.fields import *
-from tailow.document import Document
+from tailow.document import Document, DocumentException
 
 class ObjectDict(dict):
     
@@ -13,12 +13,16 @@ class ObjectDict(dict):
 
 class TestModel(Document):
     a = IntegerField(required=True)
-    b = IntegerField(required=True)
+    b = IntegerField(required=True, unique=True)
 
 class TestDocument(AioTestCase):
     
     def setUp(self):
         self.objid = ObjectId.from_datetime(datetime.now())
+
+    async def test_unique_fields(self):
+        with patch('tailow.connection.Connection.get_collection', new_callable=Mock) as amock:
+            self.assertListEqual(TestModel._meta._uniques, ["b"])
     
     async def test_model_save(self):
         with patch('tailow.connection.Connection.get_collection', new_callable=Mock) as amock:
@@ -30,6 +34,15 @@ class TestDocument(AioTestCase):
             self.assertTrue(insert_mock.called)
             self.assertTrue(amock.called)
             self.assertIsNotNone(m._id)
+
+    async def test_model_save_exception(self):
+        with patch('tailow.connection.Connection.get_collection', new_callable=Mock) as amock:
+            new_mock = AsyncMock()
+            new_mock.insert_one = insert_mock = AsyncMock(return_value=ObjectDict(inserted_id=12))
+            amock.return_value = new_mock
+            with self.assertRaises(DocumentException):
+                m = TestModel(a=1)
+                await m.save()
 
     async def test_model_update_on_id_present(self):
         with patch('tailow.connection.Connection.get_collection', new_callable=Mock) as amock:
