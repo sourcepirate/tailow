@@ -56,6 +56,7 @@ class TestReferenceField(TestCase):
     def setUp(self):
         class PsyDuck(Document):
             pass
+        self.kls = PsyDuck
         self.field = ReferenceField(PsyDuck)
         self._id = ObjectId.from_datetime(datetime.now())
         self.test_value = PsyDuck(id=self._id)
@@ -71,4 +72,5 @@ class TestReferenceField(TestCase):
         self.assertEqual(self.field.to_son(self._id), self._id)
     
     def test_field_from_son_case(self):
-        self.assertEqual(self.field.from_son(self._id), self._id)
+        self.assertIsInstance(self.field.from_son(self._id), self.kls)
+        self.assertEqual(self._id, self.field.from_son(self._id)._id)
