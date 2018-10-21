@@ -109,7 +109,11 @@ class Document(with_metaclass(DocumentMeta)):
         if field_name in ['_fields', '_values', "_id"]:
             return object.__getattribute__(self, field_name)
         if field_name in self._fields:
-            return self._fields[field_name].from_son(self._values[field_name])
+            field = self._fields[field_name]
+            value = self._values[field_name]
+            if isinstance(value, Document):
+                return field.from_son(value._id)
+            return field.from_son(value)
         return object.__getattribute__(self, field_name)
     
     def __setattr__(self, field_name, value):
@@ -152,8 +156,9 @@ class Document(with_metaclass(DocumentMeta)):
     @ensure_index
     async def get(self):
         conn = self.__class__.get_collection(self._collection)
-        if self._id:
-            value = await conn.find_one({"_id": self._id})
+        _id = self._id
+        if _id:
+            value = await conn.find_one({"_id": _id })
             for _field_value in value:
                 self._values[_field_value] = value[_field_value]
         return self
