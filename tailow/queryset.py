@@ -52,7 +52,7 @@ class QuerySet(object):
     def _get_safe_query(self):
         return self._q or Q()
     
-    async def find(self):
+    async def all(self):
         """ Find all value regarding the filters """
         qry = self._get_safe_query()
         values = self.coll().find(qry.query(self.klass._fields))
@@ -61,7 +61,7 @@ class QuerySet(object):
         if self._orders:
             values = values.sort(self._orders)
         values = await values.to_list(length=self._limit)
-        return list(map(lambda x: self.klass(**x), values))
+        return map(lambda x: self.klass(**x), values)
     
     async def get(self):
         qry = self._get_safe_query()

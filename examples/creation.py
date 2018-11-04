@@ -1,4 +1,5 @@
 import asyncio
+import profile
 from tailow.document import Document
 from tailow.fields import *
 from tailow.connection import Connection
@@ -52,11 +53,9 @@ async def helloit():
 loop.run_until_complete(helloit())
 
 async def queryAllDoc2():
-    results = await Doc2.objects.find()
+    results = await Doc2.objects.all()
     for result in results:
         sam = await result.n.get()
-        print("A")
-        print(sam.a)
+        print(sam)
 
 loop.run_until_complete(queryAllDoc2())
-
