@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 
 setup(
     name='tailow',
-    version='0.1.1',
+    version='0.3.1',
     description='A async wrapper for mongodb',
     long_description=README,
     author='Sourcepirate',
