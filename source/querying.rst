@@ -33,7 +33,7 @@ get
        print(l.password)
     
     async def find_bulk():
-       l = await Login.objects.filter(username="sathya").find()
+       l = await Login.objects.filter(username="sathya").all()
        print(l)
 
     loop = asyncio.get_event_loop()

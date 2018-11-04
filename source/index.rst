@@ -13,6 +13,7 @@ Welcome to tailow's documentation!
    model-and-fields
    create-update
    querying
+   operators
 
 
 Indices and tables
