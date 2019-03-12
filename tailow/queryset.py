@@ -1,8 +1,8 @@
 from tailow.connection import Connection
 from tailow.operators.base import QBase, Q
 
-class QuerySet(object):
 
+class QuerySet(object):
     def __init__(self, klass, limit=100, skip=0):
         self.klass = klass
         self._skip = skip
@@ -13,21 +13,21 @@ class QuerySet(object):
 
     def coll(self):
         return Connection.get_collection(self.klass._collection)
-    
+
     def skip(self, num):
         self._skip = num
         return self
-    
+
     def limit(self, num):
         self._limit = num
         return self
-    
+
     def offset(self, num):
         self._offset = num
         return self
 
     def filter(self, *q, **kwargs):
-        if len(q) > 0 and isinstance(q[0], QBase) :
+        if len(q) > 0 and isinstance(q[0], QBase):
             if self._q:
                 self._q = self._q & q[0]
             else:
@@ -36,7 +36,9 @@ class QuerySet(object):
             _filters = {}
             for field_name, value in kwargs.items():
                 if field_name not in self.klass._fields:
-                    raise ValueError("Invalid field being queried: {}".format(field_name))
+                    raise ValueError(
+                        "Invalid field being queried: {}".format(field_name)
+                    )
                 field = self.klass._fields[field_name]
                 _filters[field_name] = field.to_son(value)
                 if self._q:
@@ -51,7 +53,7 @@ class QuerySet(object):
 
     def _get_safe_query(self):
         return self._q or Q()
-    
+
     async def all(self):
         """ Find all value regarding the filters """
         qry = self._get_safe_query()
@@ -62,17 +64,15 @@ class QuerySet(object):
             values = values.sort(self._orders)
         values = await values.to_list(length=self._limit)
         return map(lambda x: self.klass(**x), values)
-    
+
     async def get(self):
         qry = self._get_safe_query()
         values = await self.coll().find_one(qry.query(self.klass._fields))
         if values:
             return self.klass(**values)
         return None
-    
+
     async def count(self):
         qry = self._get_safe_query()
-        values = await self.coll() \
-                       .find(qry.query(self.klass._fields)) \
-                       .count()
+        values = await self.coll().find(qry.query(self.klass._fields)).count()
         return values
