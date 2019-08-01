@@ -6,25 +6,28 @@ from tailow.connection import Connection
 from tailow.fields import *
 from tailow.document import Document
 
+
 class ObjectDict(dict):
-    
     def __getattribute__(self, f):
-        return  self[f]
+        return self[f]
+
 
 class CursorMock(AsyncMock):
-    
     def to_list(self, *args, **kwargs):
         return self.return_value
+
 
 class TestModel(Document):
     a = IntegerField(required=True)
     b = IntegerField(required=True)
 
+
 class TestModelQuerySet(AioTestCase):
-    
     def setUp(self):
         self.oid = ObjectId.from_datetime(datetime.now())
 
     def test_model_filters(self):
         qs = TestModel.objects.filter(a=15)
-        self.assertDictEqual(qs._get_safe_query().query(TestModel._fields), {"a": 15})
+        self.assertDictEqual(
+            qs._get_safe_query().query(TestModel._fields), {"a": 15}
+        )
